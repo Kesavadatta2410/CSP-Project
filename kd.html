@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Coordinate Graph with Path Optimization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        #popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid #333;
+            background-color: white;
+            padding: 20px;
+            z-index: 1000;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #graph {
+            border: 1px solid #000;
+        }
+
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<button type="button" onclick="showPopup()">Show Graph</button>
+
+<div id="overlay"></div>
+<div id="popup">
+    <h2>2D Coordinate Graph</h2>
+    <canvas id="graph" width="400" height="400"></canvas>
+    <label for="goal">Enter Goal (x,y): </label>
+    <input type="text" id="goal" placeholder="e.g., 3,4">
+    <button type="button" onclick="drawPath()">Draw Path</button>
+    <button type="button" onclick="closePopup()">Close</button>
+</div>
+
+<script>
+    function showPopup() {
+        document.getElementById('popup').style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+        drawGraph();
+    }
+
+    function closePopup() {
+        document.getElementById('popup').style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
+    }
+
+    function drawGraph() {
+        const canvas = document.getElementById('graph');
+        const ctx = canvas.getContext('2d');
+
+        // Clear previous graph
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw axes
+        ctx.beginPath();
+        ctx.moveTo(200, 0); // Y-axis
+        ctx.lineTo(200, 400);
+        ctx.moveTo(0, 200); // X-axis
+        ctx.lineTo(400, 200);
+        ctx.strokeStyle = 'black';
+        ctx.stroke();
+
+        // Draw grid
+        ctx.strokeStyle = '#e0e0e0';
+        for (let i = 0; i <= 400; i += 20) {
+            ctx.beginPath();
+            ctx.moveTo(i, 0);
+            ctx.lineTo(i, 400);
+            ctx.moveTo(0, i);
+            ctx.lineTo(400, i);
+            ctx.stroke();
+        }
+    }
+
+    function drawPath() {
+        const goalInput = document.getElementById('goal').value;
+        const [goalX, goalY] = goalInput.split(',').map(Number);
+
+        // Validate input
+        if (isNaN(goalX) || isNaN(goalY) || Math.abs(goalX) > 10 || Math.abs(goalY) > 10) {
+            alert('Please enter valid coordinates within the range -10 to 10.');
+            return;
+        }
+
+        const canvas = document.getElementById('graph');
+        const ctx = canvas.getContext('2d');
+
+        // Draw path
+        ctx.beginPath();
+        ctx.moveTo(200, 200); // Start at origin (0,0)
+        ctx.lineTo(200 + goalX * 20, 200 - goalY * 20); // Scale to graph size
+        ctx.strokeStyle = 'blue';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Draw goal point
+        ctx.fillStyle = 'red';
+        ctx.beginPath();
+        ctx.arc(200 + goalX * 20, 200 - goalY * 20, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Simulate weather conditions
+        const weatherConditions = ['Sunny', 'Rainy', 'Windy', 'Foggy'];
+        const randomWeather = weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
+        alert(`Current Weather: ${randomWeather}`);
+    }
+</script>
+
+</body>
+</html>
