@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Coordinate Graph with Weather Conditions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        #popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid #333;
+            background-color: white;
+            padding: 20px;
+            z-index: 1000;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #graph {
+            border: 1px solid #000;
+        }
+
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #999;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+<button type="button" onclick="showPopup()">Show Graph</button>
+
+<div id="overlay"></div>
+<div id="popup">
+    <h2>2D Coordinate Graph</h2>
+    <canvas id="graph" width="400" height="400"></canvas>
+    <label for="goal">Enter Goal (x,y): </label>
+    <input type="text" id="goal" placeholder="e.g., 3,4">
+    <button type="button" onclick="drawPath()">Draw Path</button>
+    <button type="button" onclick="closePopup()">Close</button>
+    <table id="weatherTable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Color</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Rainy</td><td style="background-color: blue;"></td></tr>
+            <tr><td>Windy</td><td style="background-color: yellow;"></td></tr>
+            <tr><td>Cloudy</td><td style="background-color: gray;"></td></tr>
+            <tr><td>Sunny</td><td style="background-color: lightblue;"></td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function showPopup() {
+        document.getElementById('popup').style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+        drawGraph();
+    }
+    
+    function closePopup() {
+        document.getElementById('popup').style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
+    }
+    
+    function drawGraph() {
+        const canvas = document.getElementById('graph');
+        const ctx = canvas.getContext('2d');
+        // Clear previous graph
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Draw axes
+        ctx.beginPath();
+        ctx.moveTo(200, 0); // Y-axis
+        ctx.lineTo(200, 400);
+        ctx.moveTo(0, 200); // X-axis
+        ctx.lineTo(400, 200);
+        ctx.strokeStyle = 'black';
+        ctx.stroke();
+        // Draw grid
+        ctx.strokeStyle = '#e0e0e0';
+        for (let i = 0; i <= 400; i += 20) {
+            ctx.beginPath();
+            ctx.moveTo(i, 0);
+            ctx.lineTo(i, 400);
+            ctx.moveTo(0, i);
+            ctx.lineTo(400, i);
+            ctx.stroke();
+        }
+    }
+    
+    function drawPath() {
+        const goalInput = document.getElementById('goal').value;
+        const [goalX, goalY] = goalInput.split(',').map(Number);
+        // Validate input
+        if (isNaN(goalX) || isNaN(goalY) || Math.abs(goalX) > 10 || Math.abs(goalY) > 10) {
+            alert('Please enter valid coordinates within the range -10 to 10.');
+            return;
+        }
+        const canvas = document.getElementById('graph');
+        const ctx = canvas.getContext('2d');
+        // Draw path
+        ctx.beginPath();
+        ctx.moveTo(200, 200); // Start at origin (0,0)
+        ctx.lineTo(200 + goalX * 20, 200 - goalY * 20); // Scale to graph size
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        // Draw goal point
+        ctx.fillStyle = 'red';
+        ctx.beginPath();
+        ctx.arc(200 + goalX * 20, 200 - goalY * 20, 5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Determine weather condition
+        const weather = determineWeather(goalX, goalY);
+        alert(`Current Weather: ${weather}`);
+    }
+
+    function determineWeather(x, y) {
+        // Define areas for weather conditions
+        const rainyArea = [[2, 1], [7, 4], [4, 10], [1, 5]];
+        const cloudyArea = [[-2, -1], [-6, -10], [-4, -4], [-1, -5]];
+        const windyCenter = [4, 4];
+        const windyRadius = 2.5;
+
+        // Check if the point is in the rainy area
+        if (rainyArea.some(point => point[0] === x && point[1] === y)) {
+            return 'Rainy';
+        }
+        // Check if the point is in the windy area
+        const dist = Math.sqrt((x - windyCenter[0]) ** 2 + (y - windyCenter[1]) ** 2);
+        if (dist <= windyRadius) {
+            return 'Windy';
+        }
+        // Check if the point is in the cloudy area
+        if (cloudyArea.some(point => point[0] === x && point[1] === y)) {
+            return 'Cloudy';
+        }
+        return 'Sunny';
+    }
+</script>
+
+</body>
+</html>
